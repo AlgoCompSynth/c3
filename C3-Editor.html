@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Christopher Curl" />
+  <title>C3 Editor</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">C3 Editor</h1>
+<p class="author">Christopher Curl</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#c3---a-stack-based-forth-vm-written-in-c."
+id="toc-c3---a-stack-based-forth-vm-written-in-c.">c3 - A stack-based
+Forth VM written in C.</a>
+<ul>
+<li><a href="#what-is-c3" id="toc-what-is-c3">What is c3?</a></li>
+<li><a href="#goals" id="toc-goals">Goals</a></li>
+<li><a href="#notes-about-c3" id="toc-notes-about-c3">Notes about
+c3:</a></li>
+<li><a href="#registers" id="toc-registers">Registers</a></li>
+<li><a href="#temporary-words" id="toc-temporary-words">Temporary
+words</a></li>
+<li><a href="#inline-words" id="toc-inline-words">Inline words</a></li>
+<li><a href="#notes-on-output-formatting-in-ztype-and-."
+id="toc-notes-on-output-formatting-in-ztype-and-.">Notes on output
+formatting in ZTYPE and ‘.”’:</a></li>
+<li><a href="#bootstrapping-c3" id="toc-bootstrapping-c3">Bootstrapping
+c3</a></li>
+<li><a href="#the-dictionary" id="toc-the-dictionary">The dictionary</a>
+<ul>
+<li><a href="#note-c3-does-not-do-a-case-sensitive-dictionary-search."
+id="toc-note-c3-does-not-do-a-case-sensitive-dictionary-search.">NOTE:
+c3 does NOT do a case-sensitive dictionary search.</a></li>
+<li><a href="#support-for-lexicons"
+id="toc-support-for-lexicons">Support for lexicons</a></li>
+</ul></li>
+<li><a href="#default-sizes-for-pc-based-systems"
+id="toc-default-sizes-for-pc-based-systems">Default sizes for PC-based
+systems</a></li>
+<li><a href="#building-c3" id="toc-building-c3">Building c3:</a></li>
+<li><a href="#arduino-boards" id="toc-arduino-boards">Arduino
+boards:</a></li>
+<li><a href="#c3-opcode-word-reference"
+id="toc-c3-opcode-word-reference">c3 Opcode / Word reference</a>
+<ul>
+<li><a href="#opcodes-and-their-words"
+id="toc-opcodes-and-their-words">Opcodes and their words</a></li>
+<li><a href="#system-opcodes-are-2-bytes-starting-with-47"
+id="toc-system-opcodes-are-2-bytes-starting-with-47">System opcodes are
+2-bytes, starting with 47</a></li>
+<li><a href="#string-opcodes-are-2-bytes-starting-with-48"
+id="toc-string-opcodes-are-2-bytes-starting-with-48">String opcodes are
+2-bytes, starting with 48</a></li>
+<li><a href="#floating-point-opcodes-are-2-bytes-starting-with-49"
+id="toc-floating-point-opcodes-are-2-bytes-starting-with-49">Floating
+point opcodes are 2-bytes, starting with 49</a></li>
+<li><a href="#opcodes-for-pcs-windows-and-linux"
+id="toc-opcodes-for-pcs-windows-and-linux">Opcodes for PCs (Windows and
+Linux)</a></li>
+<li><a href="#opcodes-for-development-boards"
+id="toc-opcodes-for-development-boards">Opcodes for Development
+Boards</a></li>
+<li><a href="#built-in-c3-system-information-words"
+id="toc-built-in-c3-system-information-words">Built-in c3
+system-information words</a></li>
+<li><a
+href="#note-if-sys_load-is-defined-see-and-modify-if-desired-sys-load.cpp-for-built-in-words."
+id="toc-note-if-sys_load-is-defined-see-and-modify-if-desired-sys-load.cpp-for-built-in-words.">NOTE:
+If <em>SYS_LOAD</em> is defined, see (and modify if desired)
+‘sys-load.cpp’ for built-in words.</a></li>
+<li><a
+href="#note-else-c3-tries-to-load-block-001.fth-on-startup-to-load-the-initial-system."
+id="toc-note-else-c3-tries-to-load-block-001.fth-on-startup-to-load-the-initial-system.">NOTE:
+Else, C3 tries to load ‘block-001.fth’ on startup to load the initial
+system.</a></li>
+<li><a href="#words-defined-in-block-001.fth"
+id="toc-words-defined-in-block-001.fth">Words defined in
+block-001.fth</a></li>
+</ul></li>
+<li><a href="#c3-startup-behavior" id="toc-c3-startup-behavior">c3
+startup behavior</a></li>
+<li><a href="#adding-new-opcodes-to-c3"
+id="toc-adding-new-opcodes-to-c3">Adding new opcodes to c3</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="c3---a-stack-based-forth-vm-written-in-c.">c3 - A stack-based
+Forth VM written in C.</h1>
+<h2 id="what-is-c3">What is c3?</h2>
+<ul>
+<li>c3 implements a stack-based, byte-coded Forth VM.</li>
+<li>c3’s opcodes implement many of the standard Forth operations.</li>
+<li>On 64-bit systems, c3 supports IEEE-754 double-precision (64-bit)
+floating point numbers.</li>
+<li>On 32-bit systems, c3 supports IEEE-754 single-precision (32-bit)
+floating point numbers.</li>
+<li>c3 provides 10 “virtual registers”, r0 thru r9.
+<ul>
+<li>Each register has 6 operations: rX, sX, iX, dX, rX+, and rX-.</li>
+</ul></li>
+<li>c3 provides 10 temporary words, T0 thru T9.
+<ul>
+<li>T0-T5 are “normal” words, T6-T8 are INLINE, and T9 is
+IMMEDIATE.</li>
+</ul></li>
+</ul>
+<h2 id="goals">Goals</h2>
+<p>The goals for c3 are: - To have an implementation that is minimal and
+“intuitively obvious upon casual inspection”. - To be very easy to
+extend as desired. - To provide as much flexibility to the programmer as
+possible. - To be able to run on Windows, Linux, Apple, and development
+boards via the Arduino IDE.</p>
+<h2 id="notes-about-c3">Notes about c3:</h2>
+<ul>
+<li>c3 is NOT an ANSI-standard Forth system.</li>
+<li>Strings in c3 are null-terminated, not counted.</li>
+<li>The user can add counted strings if desired.</li>
+<li>There are 2 separate memory areas: CODE and VARS.</li>
+<li>The dictionary starts at the end of the CODE area and grows
+down.</li>
+<li>The dictionary search is not case-sensitive.</li>
+</ul>
+<h2 id="registers">Registers</h2>
+<p>c3 exposes 10 “virtual registers”, r0 thru r9. There are 8 register
+operations: +regs, rX, rX+, rX-, sX, iX, dX, -regs. The names of the
+register words are case-sensitive: (r0-r9, not R0-R9). They can be used
+as local or global variables.</p>
+<p><strong>Note:</strong> The support for registers is built into c3, so
+they do NOT show up in “WORDS”.</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Operation</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">+regs</td>
+<td style="text-align: left;">allocate 10 new registers.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">r4</td>
+<td style="text-align: left;">push register 4 to the stack.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">r4+</td>
+<td style="text-align: left;">push register 4 to the stack, then
+increment it.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">r4-</td>
+<td style="text-align: left;">push register 4 to the stack, then
+decrement it.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">s4</td>
+<td style="text-align: left;">set register 4 from TOS.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">i4</td>
+<td style="text-align: left;">increment register 4.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">d4</td>
+<td style="text-align: left;">decrement register 4.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">-regs</td>
+<td style="text-align: left;">restore the registers to their previous
+values.</td>
+</tr>
+</tbody>
+</table>
+<p>Some example uses of registers:</p>
+<pre><code>   : btw  ( n l h--f )  +regs  s3 s2 s1  r2 r1 &lt;   r1 r3 &lt;  and  -regs ;
+   : btwi ( n l h--f )  +regs  s3 s2 s1  r2 r1 &lt;=  r1 r3 &lt;= and  -regs ;
+   : 2swap ( a b c d--c d a b )  +regs  s4 s3 s2 s1  r3 r4 r1 r2  -regs ;
+   : cmove ( f t n-- ) +regs  s3 s2 s1  r3 0 do  r1+ c@ r2+ c!  loop  -regs ;
+   : cfill ( a c n-- ) +regs  s3 s2 s1  r3 0 do  r2 r1+ c!      loop  -regs ;</code></pre>
+<h2 id="temporary-words">Temporary words</h2>
+<p>c3 provides 10 temporary words, T0 thru T9. - Defining a temporary
+word does not add an entry to the dictionary. - Temporary words are
+intended to be helpful in factoring code. - A temporary word can be
+redefined as often as desired. - When redefined, code references to the
+previous definition are unchanged. - T0-T5 are “normal” words, T6-T8 are
+INLINE, and T9 is IMMEDIATE. - The names of the temporary words are
+case-sensitive (T0-T9, not t0-t9).</p>
+<p>An example usage of temporary words:</p>
+<pre><code>\ The Babylon square root algorithm
+: T0 ( n--sqrt ) dup 4 / begin &gt;r dup r@ / r@ + 2 / dup r&gt; - 0= until nip ;
+: sqrt ( n--0|sqrt ) dup 0 &gt; if T0 else drop 0 then ;</code></pre>
+<h2 id="inline-words">Inline words</h2>
+<p>In c3, an “INLINE” word is like a macro. When compiling a word that
+is INLINE, c3 copies the contents of the word (up to, but not including
+the first EXIT) to the target, as opposed to compiling a CALL to the
+word. This improves performance and often saves space as well. This is
+especially true on a 64-bit system, where the CELL size is 8.</p>
+<p><strong>Note that if a word might have an embedded 3 (EXIT) in its
+implementation (like an address for example), then it should not be
+marked as INLINE.</strong></p>
+<h2 id="notes-on-output-formatting-in-ztype-and-.">Notes on output
+formatting in ZTYPE and ‘.”’:</h2>
+<p>ZTYPE and .” support outputting values from the stack, similar to
+what <code>printf()</code> does in C.</p>
+<p>For example:
+<code>: ascii 127 32 DO I I I I ." %n%d: (%c) %x %b" LOOP ;</code></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Op</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">%b</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Output N as a binary number</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">%c</td>
+<td style="text-align: left;">(C–)</td>
+<td style="text-align: left;">Output C as a character</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">%d</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Output N as an integer (base 10)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">%e</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output an ESCAPE (27)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">%f</td>
+<td style="text-align: left;">(F–)</td>
+<td style="text-align: left;">Output F as a floating point number</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">%g</td>
+<td style="text-align: left;">(F–)</td>
+<td style="text-align: left;">Output F as a scientific number</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">%i</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Output N as an integer (current base)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">%n</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output a CR/LF (13,10)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">%q</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output the quote character (“)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">%s</td>
+<td style="text-align: left;">(S–)</td>
+<td style="text-align: left;">Output S as a string (S is null
+terminated, not counted)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">%t</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output a TAB (9)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">%x</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Output N as a hex number</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bootstrapping-c3">Bootstrapping c3</h2>
+<p>When c3 starts, it defines words for the c3 VM opcodes.</p>
+<p>c3 has a simple “machine language parser” that can create words in
+c3’s “machine language”. The keyword for that is “-ML-”.</p>
+<p>For example, the c3 opcode for “exit word” is 3, and “duplicate the
+top of the stack” is 12. Some examples:</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">WORD</th>
+<th style="text-align: right;">Opcode</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">EXIT</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Exit word</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DUP</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Duplicate TOS</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">INLINE</td>
+<td style="text-align: right;">47,0</td>
+<td style="text-align: left;">Mark the last word as INLINE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IMMEDIATE</td>
+<td style="text-align: right;">47,1</td>
+<td style="text-align: left;">Mark the last word as IMMEDIATE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">:</td>
+<td style="text-align: right;">47,6</td>
+<td style="text-align: left;">Define a new word</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">;</td>
+<td style="text-align: right;">47,7</td>
+<td style="text-align: left;">End word definition</td>
+</tr>
+</tbody>
+</table>
+<p>The above words are defined as follows:</p>
+<pre><code>  -ML- EXIT 3 3 -MLX-
+  -ML- DUP 12 3 -MLX-
+  -ML- INLINE 47 0 3 -MLX-
+  -ML- IMMEDIATE 47 1 3 -MLX-
+  -ML- : 47 6 3 -MLX-
+  -ML- ; 47 7 3 -MLX- IMMEDIATE</code></pre>
+<p>c3 also defines some ‘system-info’ words (the addresses of system
+variables and sizes of buffers).</p>
+<p>Everything else can be defined from those. See file ‘block-001.fth’
+for details.</p>
+<p>Note that this approach gives the user the maximum flexibility.
+Opcode 12 does not have to be called “DUP”, it could just as easily be
+“(N–NN)” (or “foo–foo/foo”, or whatever). But DUP is clear and concise,
+so that its default name. :)</p>
+<h2 id="the-dictionary">The dictionary</h2>
+<h3 id="note-c3-does-not-do-a-case-sensitive-dictionary-search.">NOTE:
+c3 does NOT do a case-sensitive dictionary search.</h3>
+<p>A dictionary entry looks like this: | Field | Type | Description | |
+:– | :– | :– | | xt: | cell_t | either 32-bit or 64-bit | flags: | byte
+| IMMEDIATE=$01, INLINE=$02 | lexicon: | byte | the lexicon the word is
+in | len: | byte | length of the name | name: | char[NAME_LEN+1] | NULL
+terminated</p>
+<h3 id="support-for-lexicons">Support for lexicons</h3>
+<p>C3 supports a simple way to organize words using lexicons. - A
+lexicon identifier is a number between 0 and 255. - The current lexicon
+is set using <code>LEX!</code>. - Lexicons have no effect on the
+dictionary search. - When the lexicon &lt;&gt; 0, then
+<code>words</code> prints only the words in the current lexicon. - When
+the lexicon == 0, then <code>words</code> prints all the words in the
+dictionary. - The default/c3 lexicon is #0.</p>
+<h2 id="default-sizes-for-pc-based-systems">Default sizes for PC-based
+systems</h2>
+<ul>
+<li>The default NAME_LEN is 28.</li>
+<li>The default CODE_SZ is 128K bytes (code and dictionary).</li>
+<li>The default VARS_SZ is 4MB bytes (strings and variables).</li>
+<li>The default STK_SZ is 256 CELLS (data and return stacks).</li>
+<li>The default LSTK_SZ is 150 CELLS (loop stack, multiple of 3).</li>
+<li>The default REGS_SZ is 500 CELLS (register stack, multiple of
+10).</li>
+<li>These are defined in the c3.h file.</li>
+</ul>
+<h2 id="building-c3">Building c3:</h2>
+<ul>
+<li>Windows: there is a c3.sln file for Visual Studio
+<ul>
+<li>You can use the either configuration (x86 or x64)</li>
+</ul></li>
+<li>Linux: there is a makefile
+<ul>
+<li>“make c3” builds the 64-bit version, c3</li>
+<li>“make c3-32” builds the 32-bit version, c3-32</li>
+<li>“make” builds both versions</li>
+</ul></li>
+<li>Apple: I do not have an Apple, so I cannot build for Apples
+<ul>
+<li>But c3 is minimal enough that it should be easy to port to an Apple
+system</li>
+</ul></li>
+<li>Arduino: there is a c3.ino file</li>
+</ul>
+<h2 id="arduino-boards">Arduino boards:</h2>
+<ul>
+<li>I use the Arduino IDE v2.0</li>
+<li>File <code>c3.h</code> controls parameters for the target board</li>
+<li>Edit the section where isBOARD is defined to set the configuration
+for the board</li>
+<li>For the RPI Pico and Teensy 4.x, I use:
+<ul>
+<li>CODE_SZ: 64*1024</li>
+<li>VARS_SZ: 96*1024</li>
+<li>STK_SZ: 128</li>
+<li>LSTK_SZ: 3*25 // 25 nested loops</li>
+<li>REGS_SZ; 10*25 // 25 nested +REGS</li>
+<li>TIB_SZ; 128</li>
+<li>NAME_LEN: 17</li>
+</ul></li>
+<li>For the RPI Pico:
+<ul>
+<li>Use the arduino-pico from earlephilhower
+(https://github.com/earlephilhower/arduino-pico)</li>
+<li>The version must be 4.2.0 or later. Versions older than 4.0.0 do not
+support boards using the RP2350 microcontroller.</li>
+<li>Use <code>#define _PicoFS_</code> to include support for
+LittleFS</li>
+</ul></li>
+<li>For the Teensy-4.x:
+<ul>
+<li>Use <code>#define _TeensyFS_</code> to include support for
+LittleFS</li>
+</ul></li>
+</ul>
+<h2 id="c3-opcode-word-reference">c3 Opcode / Word reference</h2>
+<h3 id="opcodes-and-their-words">Opcodes and their words</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">STOP</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Stops the runtime engine</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">LIT1</td>
+<td style="text-align: left;">(–B)</td>
+<td style="text-align: left;">Pushes next BYTE onto the stack</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">LIT</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">Pushes next CELL onto the stack</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(LIT)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for LITERAL (INLINE)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">EXIT</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Exit word</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(EXIT)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for EXIT (INLINE)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">CALL</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Call: next CELL is address, handles
+call-tail optimization</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(CALL)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for CALL (INLINE)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">JMP</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Jump: next CELL is address</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(JMP)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for JMP</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">JMPZ</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Jump if TOS==0: next CELL is address</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(JMPZ)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for JMPZ</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">JMPNZ</td>
+<td style="text-align: left;">(N–N)</td>
+<td style="text-align: left;">Jump if TOS!=0: next CELL is address (no
+POP!)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(JMPNZ)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for JMPNZ</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">!</td>
+<td style="text-align: left;">(N A–)</td>
+<td style="text-align: left;">Store CELL N to address A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(STORE)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for STORE (!)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">C!</td>
+<td style="text-align: left;">(B A–)</td>
+<td style="text-align: left;">Store BYTE B to address A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">@</td>
+<td style="text-align: left;">(A–N)</td>
+<td style="text-align: left;">Fetch CELL N FROM address A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(FETCH)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for FETCH (@)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">C@</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">Fetch BYTE B FROM address A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">DUP</td>
+<td style="text-align: left;">(N–N N)</td>
+<td style="text-align: left;">Duplicate TOS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(DUP)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for DUP</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">DROP</td>
+<td style="text-align: left;">(A B–A)</td>
+<td style="text-align: left;">Discard TOS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">13</td>
+<td style="text-align: left;">SWAP</td>
+<td style="text-align: left;">(A B–B A)</td>
+<td style="text-align: left;">Swap TOS and NOS</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">14</td>
+<td style="text-align: left;">OVER</td>
+<td style="text-align: left;">(A B–A B A)</td>
+<td style="text-align: left;">Push a copy of NOS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">+</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A + B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">17</td>
+<td style="text-align: left;">*</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A * B</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">/MOD</td>
+<td style="text-align: left;">(A B–M Q)</td>
+<td style="text-align: left;">M: A modulo B, Q: A divided by B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A - B</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">20</td>
+<td style="text-align: left;">1+</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">Increment TOS</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">21</td>
+<td style="text-align: left;">1-</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">Decrement TOS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">22</td>
+<td style="text-align: left;">&lt;</td>
+<td style="text-align: left;">(A B–F)</td>
+<td style="text-align: left;">If A&lt;B, F=1, else F=0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">23</td>
+<td style="text-align: left;">=</td>
+<td style="text-align: left;">(A B–F)</td>
+<td style="text-align: left;">If A=B, F=1, else F=0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">&gt;</td>
+<td style="text-align: left;">(A B–F)</td>
+<td style="text-align: left;">If A&gt;B, F=1, else F=0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">25</td>
+<td style="text-align: left;">0=</td>
+<td style="text-align: left;">(N–F)</td>
+<td style="text-align: left;">If N=0, F=1, else F=0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">&gt;R</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Move N to return stack</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">R@</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: Copy of top of return stack</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">R&gt;</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: Top of return stack (popped)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">29</td>
+<td style="text-align: left;">DO</td>
+<td style="text-align: left;">(T F–)</td>
+<td style="text-align: left;">Begin a loop from F to T, set I = F</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">30</td>
+<td style="text-align: left;">LOOP</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Increment I. Jump to DO if I&lt;T</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">31</td>
+<td style="text-align: left;">-LOOP</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Decrement I. Jump to DO if I&gt;T</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">(I)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of I, the loop index</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">INVERT</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: Ones-complement of A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">34</td>
+<td style="text-align: left;">AND</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A bitwise-AND B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">35</td>
+<td style="text-align: left;">OR</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A bitwise-OR B</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">XOR</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A bitwise-XOR B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">TYPE</td>
+<td style="text-align: left;">(A N–)</td>
+<td style="text-align: left;">EMIT N chars from address A (Standard
+Forth TYPE)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">38</td>
+<td style="text-align: left;">ZTYPE</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Output formatted chars at address A to
+(output_fp)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(ZTYPE)</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">OPCODE for ZTYPE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">39,X</td>
+<td style="text-align: left;">iX</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Increment register X</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">40,X</td>
+<td style="text-align: left;">dX</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Decrement register X</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">41,X</td>
+<td style="text-align: left;">rX</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: value of register X</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">42,X</td>
+<td style="text-align: left;">rX+</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: value of register X, then decrement
+it</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">43,X</td>
+<td style="text-align: left;">rX-</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: value of register X, then increment
+it</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">44,X</td>
+<td style="text-align: left;">sX</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Set regiser X to TOS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">+REGS</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Allocate 10 new registers (add 10 to
+REG-BASE)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">46</td>
+<td style="text-align: left;">-REGS</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Restore last set of registers (subtract 10
+from REG-BASE)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">(-REGS)</td>
+<td style="text-align: left;">(–46)</td>
+<td style="text-align: left;">Opcode for -REGS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="system-opcodes-are-2-bytes-starting-with-47">System opcodes are
+2-bytes, starting with 47</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">47,0</td>
+<td style="text-align: left;">INLINE</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Mark the last word in the dictionary as
+INLINE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,1</td>
+<td style="text-align: left;">IMMEDIATE</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Mark the last word in the dictionary as
+IMMEDIATE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,2</td>
+<td style="text-align: left;">(.)</td>
+<td style="text-align: left;">(I–)</td>
+<td style="text-align: left;">Perform ITOA on I, then QTYPE it (no
+trailing space)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,3</td>
+<td style="text-align: left;"><strong>UNUSED</strong></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Not used so words can be marked as
+INLINE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,4</td>
+<td style="text-align: left;">ITOA</td>
+<td style="text-align: left;">(I–SZ)</td>
+<td style="text-align: left;">Convert I to string SZ in the current
+BASE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,5</td>
+<td style="text-align: left;">ATOI</td>
+<td style="text-align: left;">(SZ–I F)</td>
+<td style="text-align: left;">Convert string SZ to I. If successful, (I
+1) else only (0)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,6</td>
+<td style="text-align: left;">:</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Execute NEXT-WORD, add A to the
+dictionary, set STATE=1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,7</td>
+<td style="text-align: left;">;</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Compile EXIT to code,then set STATE=0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,8</td>
+<td style="text-align: left;">CREATE</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Execute NEXT-WORD, add A to the
+dictionary</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">– NOTE: when new word is executed, pushes
+VHERE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">– NOTE: must use with DOES&gt; or compile
+EXIT</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,9</td>
+<td style="text-align: left;">’</td>
+<td style="text-align: left;">(–XT FL F)</td>
+<td style="text-align: left;">Execute NEXT-WORD, search for A. If found,
+(XT FL 1), else only (0)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,10</td>
+<td style="text-align: left;">NEXT-WORD</td>
+<td style="text-align: left;">(–A N)</td>
+<td style="text-align: left;">A: Address of the next word from the input
+stream, N: length of A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,11</td>
+<td style="text-align: left;">TIMER</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: current system time in
+milliseconds</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,12</td>
+<td style="text-align: left;">C,</td>
+<td style="text-align: left;">(B–)</td>
+<td style="text-align: left;">Standard Forth “C,”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,13</td>
+<td style="text-align: left;">,</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Standard Forth “,”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,14</td>
+<td style="text-align: left;">KEY</td>
+<td style="text-align: left;">(–B)</td>
+<td style="text-align: left;">B: next keypress, wait if necessary</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,15</td>
+<td style="text-align: left;">?KEY</td>
+<td style="text-align: left;">(–F)</td>
+<td style="text-align: left;">If key was pressed, F=1, else F=0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">47,16</td>
+<td style="text-align: left;">EMIT</td>
+<td style="text-align: left;">(C–)</td>
+<td style="text-align: left;">Output CHAR C to (output_fp)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">47,17</td>
+<td style="text-align: left;">QTYPE</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Quick-type: Output string A to
+(output_fp), no formatting</td>
+</tr>
+</tbody>
+</table>
+<h3 id="string-opcodes-are-2-bytes-starting-with-48">String opcodes are
+2-bytes, starting with 48</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">48,0</td>
+<td style="text-align: left;">S-TRUNC</td>
+<td style="text-align: left;">(S–)</td>
+<td style="text-align: left;">Truncate string S</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,1</td>
+<td style="text-align: left;">LCASE</td>
+<td style="text-align: left;">(C1–C2)</td>
+<td style="text-align: left;">C2: char C1 converted to lowercase</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">48,2</td>
+<td style="text-align: left;">UCASE</td>
+<td style="text-align: left;">(C1–C2)</td>
+<td style="text-align: left;">C2: char C1 converted to uppercase</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,3</td>
+<td style="text-align: left;"><strong>UNUSED</strong></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Not used so words can be marked as
+INLINE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">48,4</td>
+<td style="text-align: left;">S-CPY</td>
+<td style="text-align: left;">(D S–)</td>
+<td style="text-align: left;">Copy string S to string D</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,5</td>
+<td style="text-align: left;">S-CAT</td>
+<td style="text-align: left;">(D S–)</td>
+<td style="text-align: left;">Concatenate string S to string D</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">48,6</td>
+<td style="text-align: left;">S-CATC</td>
+<td style="text-align: left;">(D C–)</td>
+<td style="text-align: left;">Concatenate char C to string D</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,7</td>
+<td style="text-align: left;">S-LEN</td>
+<td style="text-align: left;">(S–N)</td>
+<td style="text-align: left;">N: length of string S</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">48,8</td>
+<td style="text-align: left;">S-EQ</td>
+<td style="text-align: left;">(S1 S2–F)</td>
+<td style="text-align: left;">F: 1 if S1 = S2, else 0 (case
+sensitive)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,9</td>
+<td style="text-align: left;">S-EQI</td>
+<td style="text-align: left;">(S1 S2–F)</td>
+<td style="text-align: left;">F: 1 if S1 = S2, else 0 (not case
+sensitive)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">48,10</td>
+<td style="text-align: left;">S-EQN</td>
+<td style="text-align: left;">(S1 S2 N–F)</td>
+<td style="text-align: left;">F: 1 if the first N chars in S1 and S2 are
+the same, else 0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,11</td>
+<td style="text-align: left;">S-LTRIM</td>
+<td style="text-align: left;">(S1–S2)</td>
+<td style="text-align: left;">S2: Address &gt;= S1 where (S2[0]=0) or
+(S2[0]&gt;32)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">48,12</td>
+<td style="text-align: left;">S-RTRIM</td>
+<td style="text-align: left;">(S–S)</td>
+<td style="text-align: left;">S: The string to be right-trimmed</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">48,13</td>
+<td style="text-align: left;">S-FINDC</td>
+<td style="text-align: left;">(C S–A</td>
+<td style="text-align: left;">0)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="floating-point-opcodes-are-2-bytes-starting-with-49">Floating
+point opcodes are 2-bytes, starting with 49</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">49,0</td>
+<td style="text-align: left;">F+</td>
+<td style="text-align: left;">(F1 F2–F3)</td>
+<td style="text-align: left;">Add F1 and F2, leaving F3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">49,1</td>
+<td style="text-align: left;">F-</td>
+<td style="text-align: left;">(F1 F2–F3)</td>
+<td style="text-align: left;">Subtract F2 from F1, leaving F3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">49,2</td>
+<td style="text-align: left;">F*</td>
+<td style="text-align: left;">(F1 F2–F3)</td>
+<td style="text-align: left;">Multiply F1 and F2, leaving F3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">49,3</td>
+<td style="text-align: left;"><strong>UNUSED</strong></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Not used so words can be marked as
+INLINE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">49,4</td>
+<td style="text-align: left;">F/</td>
+<td style="text-align: left;">(F1 F2–F3)</td>
+<td style="text-align: left;">Divide F1 by F2, leaving F3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">49,5</td>
+<td style="text-align: left;">F=</td>
+<td style="text-align: left;">(F1 F2–F)</td>
+<td style="text-align: left;">F: 1 if F1 = F2, else 0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">49,6</td>
+<td style="text-align: left;">F&lt;</td>
+<td style="text-align: left;">(F1 F2–F)</td>
+<td style="text-align: left;">F: 1 if F1 &lt; F2, else 0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">49,7</td>
+<td style="text-align: left;">F&gt;</td>
+<td style="text-align: left;">(F1 F2–F)</td>
+<td style="text-align: left;">F: 1 if F1 &gt; F2, else 0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">49,8</td>
+<td style="text-align: left;">F2I</td>
+<td style="text-align: left;">(F1–N)</td>
+<td style="text-align: left;">Convert double F1 into an integer N</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">49,9</td>
+<td style="text-align: left;">I2F</td>
+<td style="text-align: left;">(N–F1)</td>
+<td style="text-align: left;">Convert integer N into a double F1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">49,10</td>
+<td style="text-align: left;">F.</td>
+<td style="text-align: left;">(F1–)</td>
+<td style="text-align: left;">Output F1 using the “%g” C format
+string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">49,11</td>
+<td style="text-align: left;">SQRT</td>
+<td style="text-align: left;">(F1–F2)</td>
+<td style="text-align: left;">F2: the square root of F1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">49,12</td>
+<td style="text-align: left;">TANH</td>
+<td style="text-align: left;">(F1–F2)</td>
+<td style="text-align: left;">F2: the hyperbolic tangent of F1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="opcodes-for-pcs-windows-and-linux">Opcodes for PCs (Windows and
+Linux)</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">SYSTEM</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Call system(A)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">101</td>
+<td style="text-align: left;">FOPEN</td>
+<td style="text-align: left;">(NM MD–H)</td>
+<td style="text-align: left;">NM: FileName, MD: Mode (e.g. - “rt”), H:
+Handle</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">102</td>
+<td style="text-align: left;">FCLOSE</td>
+<td style="text-align: left;">(H–)</td>
+<td style="text-align: left;">Close file with handle H</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">103</td>
+<td style="text-align: left;">FREAD</td>
+<td style="text-align: left;">(A N H–R)</td>
+<td style="text-align: left;">Read N bytes from file H to address A, R:
+num-read, 0 means EOF</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">104</td>
+<td style="text-align: left;">FWRITE</td>
+<td style="text-align: left;">(A N H–)</td>
+<td style="text-align: left;">Write N bytes to file H from address
+A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">105</td>
+<td style="text-align: left;">FGETS</td>
+<td style="text-align: left;">(A N H–L)</td>
+<td style="text-align: left;">Read one line from file H to address
+A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">N: size of buffer, L: length, 0 means
+EOF</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">106</td>
+<td style="text-align: left;">(LOAD)</td>
+<td style="text-align: left;">(NM–)</td>
+<td style="text-align: left;">Load from file NM</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">107</td>
+<td style="text-align: left;">LOAD</td>
+<td style="text-align: left;">(NM–)</td>
+<td style="text-align: left;">Load from Block N</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">108</td>
+<td style="text-align: left;">EDIT</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Edit Block N</td>
+</tr>
+</tbody>
+</table>
+<h3 id="opcodes-for-development-boards">Opcodes for Development
+Boards</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">110</td>
+<td style="text-align: left;">PIN-INPUT</td>
+<td style="text-align: left;">(P–)</td>
+<td style="text-align: left;">pinMode(P, INPUT)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">111</td>
+<td style="text-align: left;">PIN-OUTPUT</td>
+<td style="text-align: left;">(P–)</td>
+<td style="text-align: left;">pinMode(P, OUTPUT)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">112</td>
+<td style="text-align: left;">PIN-PULLUP</td>
+<td style="text-align: left;">(P–)</td>
+<td style="text-align: left;">pinMode(P, INPUT_PULLUP)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">113</td>
+<td style="text-align: left;">DPIN@</td>
+<td style="text-align: left;">(P–N)</td>
+<td style="text-align: left;">N = digitalRead(P)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">114</td>
+<td style="text-align: left;">APIN@</td>
+<td style="text-align: left;">(P–N)</td>
+<td style="text-align: left;">N = analogRead(P)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">115</td>
+<td style="text-align: left;">DPIN!</td>
+<td style="text-align: left;">(N P–)</td>
+<td style="text-align: left;">digitalWrite(P, N)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">116</td>
+<td style="text-align: left;">APIN!</td>
+<td style="text-align: left;">(N P–)</td>
+<td style="text-align: left;">analogWrite(P, N)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="built-in-c3-system-information-words">Built-in c3
+system-information words</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Word</th>
+<th style="text-align: left;">Stack</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">VERSION</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: c3 version*100 (e.g. - 147 =&gt;
+v1.47).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CODE</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Start address for the CODE area.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CODE-SZ</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">A: The size of the CODE area in
+bytes.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VARS</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Start address for the VARIABLES
+area.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">VARS-SZ</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: The size of the VARIABLES area in
+bytes.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(REGS)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Start address for the REGISTERS
+(REGS_SZ CELLs).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(INPUT_FP)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the input file handle.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(OUTPUT_FP)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the output file handle.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(HERE)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the HERE variable.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(LAST)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the LAST variable.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(VHERE)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the VHERE variable.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(STK)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the stack.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(SP)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the stack pointer.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(RSP)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the return stack
+pointer.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(LSP)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the loop stack pointer.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BASE</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the BASE variable.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STATE</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the STATE variable.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TIB</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of TIB (text input
+buffer).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">&gt;IN</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of &gt;IN.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(LEXICON)</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: Address of the lexicon variable.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WORD-SZ</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: size of a dictionary entry in
+bytes.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CELL</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: size of a CELL in bytes.</td>
+</tr>
+</tbody>
+</table>
+<h3
+id="note-if-sys_load-is-defined-see-and-modify-if-desired-sys-load.cpp-for-built-in-words.">NOTE:
+If <em>SYS_LOAD</em> is defined, see (and modify if desired)
+‘sys-load.cpp’ for built-in words.</h3>
+<h3
+id="note-else-c3-tries-to-load-block-001.fth-on-startup-to-load-the-initial-system.">NOTE:
+Else, C3 tries to load ‘block-001.fth’ on startup to load the initial
+system.</h3>
+<h3 id="words-defined-in-block-001.fth">Words defined in
+block-001.fth</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">WORD</th>
+<th style="text-align: left;">STACK</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">\</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Line comment</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">[</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Set STATE=0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">]</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">SET STATE=1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LAST</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">Address of the most recently created
+WORD</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">HERE</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">Address of the next free byte in the CODE
+area</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">code-end</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">Address of the end of the CODE area</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">vars-end</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">Address of the end of the VARS area</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">++</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Increment CELL at A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">–</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Decrement CELL At A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VHERE</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">Address of the next free byte in the VARS
+area</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ALLOT</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Add N to VHERE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">vc,</td>
+<td style="text-align: left;">(B–)</td>
+<td style="text-align: left;">C, to the VARS area</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">v,</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">, to the VARS area</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CELLS</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: A * CELL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CELL+</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: A + CELL</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DOES&gt;</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Defines the behavior of words created
+using “CREATE”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CONSTANT nm</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Defines word “nm” that pushes N when
+executed.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VARIABLE nm</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Defines word “nm” that pushes an addess
+when executed. ALLOTs a CELL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">val nm1</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Defines “nm1” to push a number onto the
+stack when executed.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">&gt;val nm2</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Defines “nm2” to set N to nm1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(val) nm3</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">Defines “nm3” to push the address of
+nm1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">:NONAME</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: HERE. Sets STATE=1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EXEC</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Jumps to address A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IF</td>
+<td style="text-align: left;">(F–)</td>
+<td style="text-align: left;">If F=0, jump to ELSE or THEN</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ELSE</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">If F&lt;&gt;0 (from IF), jump here</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">THEN</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">End of IF or IF/ELSE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BEGIN</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Start a LOOP</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UNTIL</td>
+<td style="text-align: left;">(F–)</td>
+<td style="text-align: left;">If F&lt;&gt;0 jump to BEGIN</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">AGAIN</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Jump to BEGIN</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WHILE</td>
+<td style="text-align: left;">(F–)</td>
+<td style="text-align: left;">If F=0, jump to instruction after
+REPEAT</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">REPEAT</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Jump to BEGIN (resolves WHILE)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FOR</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Begin a loop of N iterations</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NEXT</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Next iteration</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">-EXIT</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Compile <code>-REGS</code> and
+<code>EXIT</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">-if</td>
+<td style="text-align: left;">(F–F)</td>
+<td style="text-align: left;">Non-destructive IF</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">-until</td>
+<td style="text-align: left;">(F–F)</td>
+<td style="text-align: left;">Non-destructive UNTIL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">-while</td>
+<td style="text-align: left;">(F–F)</td>
+<td style="text-align: left;">Non-destructive WHILE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TUCK</td>
+<td style="text-align: left;">(A B–B A B)</td>
+<td style="text-align: left;">Tuck TOS before NOS</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NIP</td>
+<td style="text-align: left;">(A B–B)</td>
+<td style="text-align: left;">Drop NOS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2DUP</td>
+<td style="text-align: left;">(A B–A B A B)</td>
+<td style="text-align: left;">Duplicate top 2 items</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2DROP</td>
+<td style="text-align: left;">(A B–)</td>
+<td style="text-align: left;">Drop top 2 items</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">?DUP</td>
+<td style="text-align: left;">(F–F?)</td>
+<td style="text-align: left;">If F&lt;&gt;0, duplicate it</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">/</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A/B</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mod</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A modulo B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">+!</td>
+<td style="text-align: left;">(N A–)</td>
+<td style="text-align: left;">Add N to value at A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">c++</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Increment BYTE at A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2*</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: A*2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2/</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: A/2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2+</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: A+2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">&lt;=</td>
+<td style="text-align: left;">(A B–F)</td>
+<td style="text-align: left;">F: if A&lt;=B then 1 else 0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">&gt;=</td>
+<td style="text-align: left;">(A B–F)</td>
+<td style="text-align: left;">F: if A&gt;=B then 1 else 0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">&lt;&gt;</td>
+<td style="text-align: left;">(A B–F)</td>
+<td style="text-align: left;">F: if A&lt;&gt;B then 1 else 0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RDROP</td>
+<td style="text-align: left;">(R:A–)</td>
+<td style="text-align: left;">Drop top of RETURN stack</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ROT</td>
+<td style="text-align: left;">(A B C–B C A)</td>
+<td style="text-align: left;">Rotate A to TOS</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Skip until ‘)’ or EOL</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bl</td>
+<td style="text-align: left;">(–C)</td>
+<td style="text-align: left;">C: 32 (SPACE)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">tab</td>
+<td style="text-align: left;">(–C)</td>
+<td style="text-align: left;">C: 9 (TAB)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cr</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output a NL (CR/LF)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">space</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output a SPACE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">.</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Print N in the current BASE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NEGATE</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: -A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ABS</td>
+<td style="text-align: left;">(A–B)</td>
+<td style="text-align: left;">B: if A&lt;0 then -A else A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">min</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: if A&lt;B then A else B</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">max</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: if A&gt;B then A else B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">btw</td>
+<td style="text-align: left;">(N L H–F)</td>
+<td style="text-align: left;">F: if L&lt;=N and N&lt;=H then 1 else
+0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">I</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">Index of the current loop</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">J</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">Index of the next outer loop</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">+I</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Add N to the index (+1 is still added at
+LOOP)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">+LOOP</td>
+<td style="text-align: left;">(N–)</td>
+<td style="text-align: left;">Add N to the index and LOOP</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UNLOOP</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Unwind the loop stack (does NOT exit the
+loop)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">0SP</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Empty/reset the stack</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DEPTH</td>
+<td style="text-align: left;">(–N)</td>
+<td style="text-align: left;">N: the number of items on the stack</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">.S</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output the stack using the current
+BASE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dump</td>
+<td style="text-align: left;">(F N–)</td>
+<td style="text-align: left;">Output N bytes starting from F in the
+current BASE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">” str”</td>
+<td style="text-align: left;">(–A)</td>
+<td style="text-align: left;">A: the address of “str”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">.” hi”</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Output “hi”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">.word</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Output the name of the word at A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">word-len</td>
+<td style="text-align: left;">(A–N)</td>
+<td style="text-align: left;">N: the length of the word at A</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WORDS</td>
+<td style="text-align: left;">(–C</td>
+<td style="text-align: left;">Output the words in the dictionary</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BINARY</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Set the BASE to 2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DECIMAL</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Set the BASE to 10</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">HEX</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Set the BASE to 16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">?</td>
+<td style="text-align: left;">(A–)</td>
+<td style="text-align: left;">Output the value of the CELL at A</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LSHIFT</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A &lt;&lt; B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RSHIFT</td>
+<td style="text-align: left;">(A B–C)</td>
+<td style="text-align: left;">C: A &gt;&gt; B</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LOAD <FN></td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Load from file “fn”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LOAD-ABORT</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Stop loading from file</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LOADED?</td>
+<td style="text-align: left;">(A B C–)</td>
+<td style="text-align: left;">Stops loading from file if C &lt;&gt;
+0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MARKER</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Remember HERE, LAST, and VHERE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FORGET</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Reset HERE, LAST, and VHERE to remembered
+values</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">FORGET-1</td>
+<td style="text-align: left;">(–)</td>
+<td style="text-align: left;">Remove the most recent entry from the
+dictionary</td>
+</tr>
+</tbody>
+</table>
+<h2 id="c3-startup-behavior">c3 startup behavior</h2>
+<p>On startup, c3 does the following to bootstrap itself: - The first
+parameter (if provided) is assumed to be the root folder for searching.
+1. Create words to define its primitives. 2. Create system-information
+words. 3. If <em>SYS_LOAD</em> is defined, load the words defind in
+‘sys-load.cpp’. 4. If <em>SYS_LOAD</em> is not defined, try to load
+block-001.fth from the following locations (in order): - The current
+folder, “.” - On Windows: - (root) - (root) - On Linux: -
+(root)/.local/c3 - (root)/.local/bin</p>
+<ul>
+<li>For every other parameter on the command line:
+<ul>
+<li>IF c3 can open argv[N] as a file, queue it up to be loaded.</li>
+<li>IF argv[N] can be converted to a number, set rN to that number</li>
+<li><ul>
+<li>ELSE, set rN to argv[N] (e.g. - rN QTYPE will output the parameter)
+### Example: ``` Running this (under Linux): “c3 ~ $100 test.txt”
+will:</li>
+</ul></li>
+</ul></li>
+<li>Set the root folder for startup file searches to “~”</li>
+<li>Set r2 to #256</li>
+<li>Set r3 to the address where “test.txt” starts.</li>
+</ul>
+<p>Running this (under Windows): “c3 e: $100 test.txt” will: - Set the
+root folder for startup file searches to “e:” - Set r2 to #256 - Set r3
+to the address where “test.txt” starts. ```</p>
+<h2 id="adding-new-opcodes-to-c3">Adding new opcodes to c3</h2>
+<p>If for any reason, there is a need/desire to add more opcodes to c3,
+this section describes how it can be accomplished.</p>
+<p>For example, there might be some functionality in a library you want
+to make available, or maybe there is a bottleneck in performance you
+want to improve.</p>
+<p>Here is the process:</p>
+<ul>
+<li>For a global opcode:
+<ul>
+<li>In c3.cpp, add the new opcode(s) to the appropriate enum.</li>
+<li>In c3.cpp, add a NCASE to run() to for each new opcode.</li>
+<li>In c3.cpp, add a “-ML-” line to LoadC3Words() for each new
+opcode.</li>
+<li>Update your README.md.</li>
+</ul></li>
+<li>For a target-specific opcode:
+<ul>
+<li>All work is done in the target’s *.cpp file (e.g. - sys-pc.cpp or
+c3.ino).</li>
+<li>Add the new opcodes(s) to the enum near the beginning of the
+file.</li>
+<li>Target-specific opcodes should have values above 100.</li>
+<li>Edit function ‘loadUserWords()’ and add a “-ML-” line for each new
+opcode.</li>
+<li>For example: to define opcode 120 as “NEWOP” … parseF(“-ML- NEWOP %d
+3 -MLX- inline”, NEWOP);</li>
+<li>In doUser(), add cases for the new opcode(s).</li>
+<li>Update your README.md.</li>
+</ul></li>
+</ul>
+</body>
+</html>
