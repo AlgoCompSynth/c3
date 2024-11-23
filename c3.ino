@@ -1,3 +1,22 @@
+/*
+  This example generates a square wave based tone at a specified frequency
+  and sample rate. Then outputs the data using the I2S interface to a
+  MAX08357 I2S Amp Breakout board.
+
+  created 17 November 2016
+  by Sandeep Mistry
+  modified for RP2040 by Earle F. Philhower, III <earlephilhower@yahoo.com>
+
+
+    bool setBCLK(pin_size_t pin);
+    - This assigns two adjacent pins - the pin after this one (one greater)
+      is the WS (word select) signal, which toggles before the sample for
+      each channel is sent
+
+    bool setDATA(pin_size_t pin);
+    - Sets the DOUT pin, can be any valid GPIO pin
+*/
+
 // I2S square wave generator declarations
 #include <I2S.h>
 
@@ -178,22 +197,3 @@ void loop() {
   }
   // end C3 keyboard monitor
 }
-
-/*
-  This example generates a square wave based tone at a specified frequency
-  and sample rate. Then outputs the data using the I2S interface to a
-  MAX08357 I2S Amp Breakout board.
-
-  created 17 November 2016
-  by Sandeep Mistry
-  modified for RP2040 by Earle F. Philhower, III <earlephilhower@yahoo.com>
-
-
-    bool setBCLK(pin_size_t pin);
-    - This assigns two adjacent pins - the pin after this one (one greater)
-      is the WS (word select) signal, which toggles before the sample for
-      each channel is sent
-
-    bool setDATA(pin_size_t pin);
-    - Sets the DOUT pin, can be any valid GPIO pin
-*/
