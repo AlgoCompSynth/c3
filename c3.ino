@@ -1,27 +1,3 @@
-// I2S square wave generator declarations
-#include <I2S.h>
-
-// Create the I2S port using a PIO state machine
-I2S i2s(OUTPUT);
-
-// GPIO pin numbers
-// Pimoroni Pico Audio Pack
-// https://cdn.shopify.com/s/files/1/0174/1800/files/pico_audio_pack_schematic.pdf
-#define pBCLK 10
-#define pWS (pBCLK+1)
-#define pDOUT 9
-
-const int frequency = 880; // 440 Hz * 2 to account for half-wave
-const int amplitude = 32767; // maximum amplitude of 16-bit signed square wave
-const int sampleRate = 22000; // even multiple of frequency
-
-const int halfWavelength = (sampleRate / frequency); // half wavelength of square wave
-
-int16_t i2s_sample = amplitude; // current sample value
-int sample_count = 0;
-// End I2S square wave generator declarations
-
-// C3 declarations
 // Support for development boards
 
 #include "c3.h"
@@ -103,37 +79,14 @@ char *doUser(char *pc, int ir) {
     return pc; default: return 0;
   }
 }
-// End C3 declarations
 
 void setup() {
-
-  // C3 initialization
   serialInit();
   // printString("Hello.");
   fileInit();
   c3Init();
   printString(" ok\r\n");
   in = (char*)0;
-  // end C3 initialization
-
-  // I2S square wave initialization
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, 1);
-
-  Serial.begin(115200);
-  Serial.println("I2S simple tone");
-
-  i2s.setBCLK(pBCLK);
-  i2s.setDATA(pDOUT);
-  i2s.setBitsPerSample(16);
-
-  // start I2S at the sample rate with 16-bits per sample
-  if (!i2s.begin(sampleRate)) {
-    Serial.println("Failed to initialize I2S!");
-    while (1); // do nothing
-  }
-  // end I2S square wave initialization
-
 }
 
 void idle() {
@@ -141,22 +94,6 @@ void idle() {
 }
 
 void loop() {
-
-  // I2S square wave generator
-  if (sample_count % halfWavelength == 0) {
-    // invert the sample every half wavelength count multiple to generate square wave
-    i2s_sample = -1 * i2s_sample;
-  }
-
-  // write the same sample twice, once for left and once for the right channel
-  i2s.write(i2s_sample);
-  i2s.write(i2s_sample);
-
-  // increment the counter for the next sample
-  sample_count++;
-  // end I2s square wave generator
-
-  // C3 keyboard monitor
   if (qKey() == 0) { idle(); return; }
   int c = key();
   if (!in) {
@@ -176,24 +113,4 @@ void loop() {
   } else {
       if (BTW(c,32,126)) { *(in++) = c; PC(c); }
   }
-  // end C3 keyboard monitor
 }
-
-/*
-  This example generates a square wave based tone at a specified frequency
-  and sample rate. Then outputs the data using the I2S interface to a
-  MAX08357 I2S Amp Breakout board.
-
-  created 17 November 2016
-  by Sandeep Mistry
-  modified for RP2040 by Earle F. Philhower, III <earlephilhower@yahoo.com>
-
-
-    bool setBCLK(pin_size_t pin);
-    - This assigns two adjacent pins - the pin after this one (one greater)
-      is the WS (word select) signal, which toggles before the sample for
-      each channel is sent
-
-    bool setDATA(pin_size_t pin);
-    - Sets the DOUT pin, can be any valid GPIO pin
-*/
