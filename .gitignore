@@ -11,3 +11,5 @@ c3
 *.kate-swp
 /x64
 c3-32
+*.log
+build
